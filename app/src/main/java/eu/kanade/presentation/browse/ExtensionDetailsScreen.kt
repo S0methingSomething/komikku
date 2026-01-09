@@ -82,6 +82,7 @@ fun ExtensionDetailsScreen(
     onClickUninstall: () -> Unit,
     onClickSource: (sourceId: Long) -> Unit,
     onClickIncognito: (Boolean) -> Unit,
+    onClickPrivateKeyboard: (Boolean) -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
     val url = remember(state.extension) {
@@ -160,10 +161,12 @@ fun ExtensionDetailsScreen(
             extension = state.extension,
             sources = state.sources,
             incognitoMode = state.isIncognito,
+            privateKeyboardMode = state.isPrivateKeyboard,
             onClickSourcePreferences = onClickSourcePreferences,
             onClickUninstall = onClickUninstall,
             onClickSource = onClickSource,
             onClickIncognito = onClickIncognito,
+            onClickPrivateKeyboard = onClickPrivateKeyboard,
         )
     }
 }
@@ -174,10 +177,12 @@ private fun ExtensionDetails(
     extension: Extension.Installed,
     sources: ImmutableList<ExtensionSourceItem>,
     incognitoMode: Boolean,
+    privateKeyboardMode: Boolean,
     onClickSourcePreferences: (sourceId: Long) -> Unit,
     onClickUninstall: () -> Unit,
     onClickSource: (sourceId: Long) -> Unit,
     onClickIncognito: (Boolean) -> Unit,
+    onClickPrivateKeyboard: (Boolean) -> Unit,
 ) {
     val context = LocalContext.current
     var showNsfwWarning by remember { mutableStateOf(false) }
@@ -202,6 +207,7 @@ private fun ExtensionDetails(
             DetailsHeader(
                 extension = extension,
                 extIncognitoMode = incognitoMode,
+                extPrivateKeyboardMode = privateKeyboardMode,
                 onClickUninstall = onClickUninstall,
                 onClickAppInfo = {
                     Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -214,6 +220,7 @@ private fun ExtensionDetails(
                     showNsfwWarning = true
                 },
                 onExtIncognitoChange = onClickIncognito,
+                onExtPrivateKeyboardChange = onClickPrivateKeyboard,
             )
         }
 
@@ -242,10 +249,12 @@ private fun ExtensionDetails(
 private fun DetailsHeader(
     extension: Extension,
     extIncognitoMode: Boolean,
+    extPrivateKeyboardMode: Boolean,
     onClickAgeRating: () -> Unit,
     onClickUninstall: () -> Unit,
     onClickAppInfo: (() -> Unit)?,
     onExtIncognitoChange: (Boolean) -> Unit,
+    onExtPrivateKeyboardChange: (Boolean) -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -388,6 +397,23 @@ private fun DetailsHeader(
                     Switch(
                         checked = extIncognitoMode,
                         onCheckedChange = onExtIncognitoChange,
+                        modifier = Modifier.padding(start = TrailingWidgetBuffer),
+                    )
+                }
+            },
+        )
+
+        TextPreferenceWidget(
+            modifier = Modifier.padding(horizontal = MaterialTheme.padding.small),
+            title = stringResource(MR.strings.pref_private_keyboard),
+            subtitle = stringResource(MR.strings.pref_private_keyboard_extension_summary),
+            widget = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Switch(
+                        checked = extPrivateKeyboardMode,
+                        onCheckedChange = onExtPrivateKeyboardChange,
                         modifier = Modifier.padding(start = TrailingWidgetBuffer),
                     )
                 }

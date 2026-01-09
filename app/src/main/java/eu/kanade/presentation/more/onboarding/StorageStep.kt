@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,6 +23,7 @@ import eu.kanade.presentation.more.settings.screen.SettingsDataScreen
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
 import tachiyomi.domain.storage.service.StorageManager.Companion.directoryAccessible
+import tachiyomi.domain.storage.service.StorageManager.Companion.setInternalStorage
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.Button
@@ -77,6 +79,13 @@ internal class StorageStep : OnboardingStep {
                 },
             ) {
                 Text(stringResource(MR.strings.onboarding_storage_action_select))
+            }
+
+            OutlinedButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { setInternalStorage(context, storagePref) },
+            ) {
+                Text(stringResource(MR.strings.onboarding_storage_action_internal))
             }
 
             HorizontalDivider(

@@ -15,10 +15,12 @@ import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.interactor.GetEnabledSources
 import eu.kanade.domain.source.interactor.GetIncognitoState
 import eu.kanade.domain.source.interactor.GetLanguagesWithSources
+import eu.kanade.domain.source.interactor.GetPrivateKeyboardState
 import eu.kanade.domain.source.interactor.GetSourcesWithFavoriteCount
 import eu.kanade.domain.source.interactor.SetMigrateSorting
 import eu.kanade.domain.source.interactor.ToggleIncognito
 import eu.kanade.domain.source.interactor.ToggleLanguage
+import eu.kanade.domain.source.interactor.TogglePrivateKeyboard
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.interactor.ToggleSourcePin
 import eu.kanade.domain.track.interactor.AddTracks
@@ -201,5 +203,7 @@ class DomainModule : InjektModule {
         addFactory { UpdateExtensionRepo(get(), get()) }
         addFactory { ToggleIncognito(get()) }
         addFactory { GetIncognitoState(get(), get(), get()) }
+        addFactory { TogglePrivateKeyboard(get()) }
+        addFactory { GetPrivateKeyboardState(get(), get(), get()) }
     }
 }

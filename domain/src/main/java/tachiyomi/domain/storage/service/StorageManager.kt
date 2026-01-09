@@ -204,6 +204,16 @@ class StorageManager(
         }
 
         /**
+         * Set internal app storage as the storage directory
+         */
+        fun setInternalStorage(context: Context, storageDirPref: Preference<String>) {
+            val internalDir = File(context.getExternalFilesDir(null), context.stringResource(MR.strings.app_name))
+            if (!internalDir.exists()) internalDir.mkdirs()
+            storageDirPref.set("")
+            storageDirPref.set(internalDir.toUri().toString())
+        }
+
+        /**
          * Used to check if system is able to open contract [ActivityResultContracts.OpenDocumentTree]
          * by checking if intent [Intent.ACTION_OPEN_DOCUMENT_TREE] is available and not being stub (on Android TV)
          */

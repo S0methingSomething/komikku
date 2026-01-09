@@ -184,6 +184,7 @@
     <string name="onboarding_action_skip">Skip</string>
     <string name="onboarding_storage_info">Select a folder where %1$s will store chapter downloads, backups, and more.\n\nA dedicated folder is recommended.\n\nSelected folder: %2$s</string>
     <string name="onboarding_storage_action_select">Select a folder</string>
+    <string name="onboarding_storage_action_internal">Use internal storage</string>
     <string name="onboarding_storage_selection_required">A folder must be selected</string>
     <string name="onboarding_storage_help_info">Updating from an older version and not sure what to select? Refer to the storage guide for more information.</string>
     <string name="onboarding_storage_help_action">Storage guide</string>
@@ -660,6 +661,8 @@
     <string name="pref_incognito_mode">Incognito mode</string>
     <string name="pref_incognito_mode_summary">Pauses reading history</string>
     <string name="pref_incognito_mode_extension_summary">Pause reading history for extension</string>
+    <string name="pref_private_keyboard">Private keyboard</string>
+    <string name="pref_private_keyboard_extension_summary">Prevent keyboard from learning your searches</string>
     <string name="notification_incognito_text">Disable incognito mode</string>
     <string name="downloaded_only_summary">Filters all entries in your library</string>
 

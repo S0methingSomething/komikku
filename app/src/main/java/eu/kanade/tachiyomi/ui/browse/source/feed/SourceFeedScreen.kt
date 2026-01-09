@@ -23,6 +23,7 @@ import eu.kanade.presentation.browse.components.BulkFavoriteDialogs
 import eu.kanade.presentation.browse.components.FeedActionsDialog
 import eu.kanade.presentation.browse.components.SourceFeedAddDialog
 import eu.kanade.presentation.browse.components.SourceFeedDeleteDialog
+import eu.kanade.presentation.components.ProvidePrivateKeyboardMode
 import eu.kanade.presentation.more.settings.screen.SettingsEhScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.source.ConfigurableSource
@@ -109,6 +110,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                 )
             } else {
                 // KMK <--
+                ProvidePrivateKeyboardMode(enabled = screenModel.privateKeyboardMode.value) {
                 SourceFeedScreen(
                     name = screenModel.source.name,
                     isLoading = state.isLoading,
@@ -173,6 +175,7 @@ class SourceFeedScreen(val sourceId: Long) : Screen() {
                     bulkFavoriteScreenModel = bulkFavoriteScreenModel,
                     // KMK <--
                 )
+                }
             }
         }
 

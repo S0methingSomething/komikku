@@ -60,6 +60,7 @@ data class ExtensionDetailsScreen(
             onClickUninstall = screenModel::uninstallExtension,
             onClickSource = screenModel::toggleSource,
             onClickIncognito = screenModel::toggleIncognito,
+            onClickPrivateKeyboard = screenModel::togglePrivateKeyboard,
         )
 
         LaunchedEffect(Unit) {

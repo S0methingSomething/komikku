@@ -12,6 +12,7 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.core.preference.asState
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetIncognitoState
+import eu.kanade.domain.source.interactor.GetPrivateKeyboardState
 import eu.kanade.domain.source.interactor.ToggleIncognito
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.ui.UiPreferences
@@ -84,6 +85,7 @@ open class SourceFeedScreenModel(
     // KMK -->
     private val reorderFeed: ReorderFeed = Injekt.get(),
     private val getIncognitoState: GetIncognitoState = Injekt.get(),
+    private val getPrivateKeyboardState: GetPrivateKeyboardState = Injekt.get(),
     private val toggleIncognito: ToggleIncognito = Injekt.get(),
     private val extensionManager: ExtensionManager = Injekt.get(),
     sourcePreferences: SourcePreferences = Injekt.get(),
@@ -100,6 +102,7 @@ open class SourceFeedScreenModel(
 
     // KMK -->
     var incognitoMode = mutableStateOf(getIncognitoState.await(source.id))
+    var privateKeyboardMode = mutableStateOf(getPrivateKeyboardState.await(source.id))
     // KMK <--
 
     init {

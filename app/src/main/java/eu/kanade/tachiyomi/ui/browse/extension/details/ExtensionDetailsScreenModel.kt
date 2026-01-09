@@ -7,6 +7,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import eu.kanade.domain.extension.interactor.ExtensionSourceItem
 import eu.kanade.domain.extension.interactor.GetExtensionSources
 import eu.kanade.domain.source.interactor.ToggleIncognito
+import eu.kanade.domain.source.interactor.TogglePrivateKeyboard
 import eu.kanade.domain.source.interactor.ToggleSource
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
@@ -40,6 +41,7 @@ class ExtensionDetailsScreenModel(
     private val getExtensionSources: GetExtensionSources = Injekt.get(),
     private val toggleSource: ToggleSource = Injekt.get(),
     private val toggleIncognito: ToggleIncognito = Injekt.get(),
+    private val togglePrivateKeyboard: TogglePrivateKeyboard = Injekt.get(),
     private val preferences: SourcePreferences = Injekt.get(),
 ) : StateScreenModel<ExtensionDetailsScreenModel.State>(State()) {
 
@@ -94,6 +96,15 @@ class ExtensionDetailsScreenModel(
                         mutableState.update { it.copy(isIncognito = isIncognito) }
                     }
             }
+            launch {
+                preferences.privateKeyboardExtensions()
+                    .changes()
+                    .map { pkgName in it }
+                    .distinctUntilChanged()
+                    .collectLatest { isPrivateKeyboard ->
+                        mutableState.update { it.copy(isPrivateKeyboard = isPrivateKeyboard) }
+                    }
+            }
         }
     }
 
@@ -138,10 +149,17 @@ class ExtensionDetailsScreenModel(
         }
     }
 
+    fun togglePrivateKeyboard(enable: Boolean) {
+        state.value.extension?.pkgName?.let { packageName ->
+            togglePrivateKeyboard.await(packageName, enable)
+        }
+    }
+
     @Immutable
     data class State(
         val extension: Extension.Installed? = null,
         val isIncognito: Boolean = false,
+        val isPrivateKeyboard: Boolean = false,
         private val _sources: ImmutableList<ExtensionSourceItem>? = null,
     ) {
 

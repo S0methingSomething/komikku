@@ -91,4 +91,13 @@ fun Source.isIncognitoModeEnabled(incognitoExtensions: Set<String>? = null): Boo
     }
     return extensionPackage in (incognitoExtensions ?: Injekt.get<SourcePreferences>().incognitoExtensions().get())
 }
+
+fun Source.isPrivateKeyboardEnabled(privateKeyboardExtensions: Set<String>? = null): Boolean {
+    val extensionPackage = when {
+        isLocal() -> LOCAL_SOURCE_PACKAGE
+        isEhBasedSource() -> EH_PACKAGE
+        else -> Injekt.get<ExtensionManager>().getExtensionPackage(id)
+    }
+    return extensionPackage in (privateKeyboardExtensions ?: Injekt.get<SourcePreferences>().privateKeyboardExtensions().get())
+}
 // KMK <--

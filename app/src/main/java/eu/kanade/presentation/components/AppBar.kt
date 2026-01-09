@@ -353,7 +353,7 @@ fun SearchToolbar(
                     fontWeight = FontWeight.Normal,
                     fontSize = 18.sp,
                 ),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search).withPrivateMode(),
                 keyboardActions = KeyboardActions(onSearch = { searchAndClearFocus() }),
                 singleLine = true,
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.onBackground),

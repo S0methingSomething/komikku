@@ -19,6 +19,7 @@ import eu.kanade.core.preference.asState
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.interactor.GetExhSavedSearch
 import eu.kanade.domain.source.interactor.GetIncognitoState
+import eu.kanade.domain.source.interactor.GetPrivateKeyboardState
 import eu.kanade.domain.source.interactor.ToggleIncognito
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
@@ -112,6 +113,7 @@ open class BrowseSourceScreenModel(
     private val getIncognitoState: GetIncognitoState = Injekt.get(),
     // KMK -->
     private val toggleIncognito: ToggleIncognito = Injekt.get(),
+    private val getPrivateKeyboardState: GetPrivateKeyboardState = Injekt.get(),
     private val extensionManager: ExtensionManager = Injekt.get(),
     // KMK <--
 
@@ -139,6 +141,7 @@ open class BrowseSourceScreenModel(
 
     // KMK -->
     var incognitoMode = mutableStateOf(getIncognitoState.await(source.id))
+    var privateKeyboardMode = mutableStateOf(getPrivateKeyboardState.await(source.id))
     // KMK <--
 
     init {
