@@ -12,6 +12,12 @@ on:
   #     - '**.md'
   # Dispatch or Manual triggers
   workflow_dispatch:
+    inputs:
+      skip-signing:
+        description: 'Skip signing and Google services (test build only)'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -38,6 +44,7 @@ jobs:
           distribution: temurin
 
       - name: Write google-services.json
+        if: ${{ !inputs.skip-signing }}
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/google-services.json
@@ -45,6 +52,7 @@ jobs:
           write-mode: overwrite
 
       - name: Write client_secrets.json
+        if: ${{ !inputs.skip-signing }}
         uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: app/src/main/assets/client_secrets.json
@@ -57,8 +65,13 @@ jobs:
       - name: Check code format
         run: ./gradlew spotlessCheck
 
-      - name: Build app
+      - name: Build app (full)
+        if: ${{ !inputs.skip-signing }}
         run: ./gradlew assemblePreview -Pinclude-telemetry -Penable-updater
+
+      - name: Build app (test only)
+        if: ${{ inputs.skip-signing }}
+        run: ./gradlew assemblePreview assembleRelease
 
       - name: Run unit tests
         id: unit_tests
@@ -72,6 +85,7 @@ jobs:
           path: app/build/reports/tests/testReleaseUnitTest
 
       - name: Sign APK
+        if: ${{ !inputs.skip-signing }}
         uses: r0adkll/sign-android-release@f30bdd30588842ac76044ecdbd4b6d0e3e813478
         with:
           releaseDirectory: app/build/outputs/apk/preview
@@ -83,6 +97,7 @@ jobs:
           BUILD_TOOLS_VERSION: '35.0.1'
 
       - name: Rename apk
+        if: ${{ !inputs.skip-signing }}
         id: current_commit
         run: |
           set -e
@@ -95,12 +110,23 @@ jobs:
           mv app/build/outputs/apk/preview/app-universal-preview-signed.apk Komikku-$version_tag-r$commit_count.apk
 
       - name: Upload APK
+        if: ${{ !inputs.skip-signing }}
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: Komikku-${{ steps.current_commit.outputs.VERSION_TAG }}-r${{ steps.current_commit.outputs.COMMIT_COUNT }}.apk
           path: ./*.apk
 
+      - name: Upload debug APK
+        if: ${{ inputs.skip-signing }}
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: Komikku-unsigned-${{ github.sha }}
+          path: |
+            app/build/outputs/apk/preview/*.apk
+            app/build/outputs/apk/release/*.apk
+
       - name: Upload mapping
+        if: ${{ !inputs.skip-signing }}
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: mapping-${{ github.sha }}
