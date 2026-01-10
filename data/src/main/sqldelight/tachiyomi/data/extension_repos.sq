@@ -36,7 +36,7 @@ DO UPDATE
 SET
     name = :name,
     short_name = :short_name,
-    website =: website,
+    website = :website,
     signing_key_fingerprint = :fingerprint
 WHERE base_url = base_url;
 
@@ -49,7 +49,7 @@ SET
     base_url = :base_url,
     name = :name,
     short_name = :short_name,
-    website =: website
+    website = :website
 WHERE signing_key_fingerprint = signing_key_fingerprint;
 
 delete:
