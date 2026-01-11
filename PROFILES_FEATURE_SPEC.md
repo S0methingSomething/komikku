@@ -260,17 +260,26 @@ External Storage (user-selected):
 
 ---
 
-## Migration (Existing Users)
+## Migration Strategy
 
-On first launch after update:
+### Important: Signature Conflict Reality
 
+Since this fork uses a different signing key than original Komikku:
+- Users **cannot** update from original Komikku directly
+- They must: Backup → Uninstall original → Install fork → Restore
+- Uninstalling wipes `/data/data/` - **no local data to migrate**
+- Migration happens **via backup restore**, not local file detection
+
+### Fresh Install (No Profiles Yet)
+
+On first launch:
 ```kotlin
-fun migrateToProfiles() {
+fun initializeProfiles() {
     if (profilesAlreadyExist()) return
     
     val defaultId = UUID.randomUUID().toString()
     
-    // 1. Create default profile
+    // Create default profile with empty database
     val defaultProfile = Profile(
         id = defaultId,
         name = "Default",
@@ -280,19 +289,46 @@ fun migrateToProfiles() {
         createdAt = System.currentTimeMillis()
     )
     
-    // 2. Rename existing database
-    context.getDatabasePath("tachiyomi.db")
-        .renameTo(context.getDatabasePath("komikku_$defaultId.db"))
+    saveProfiles(listOf(defaultProfile))
+    setCurrentProfileId(defaultId)
     
-    // 3. Copy existing prefs to profile prefs
-    
-    // 4. Move downloads to profile subdirectory + add .nomedia
-    
-    // 5. Move caches
-    
-    // 6. Save profile list and set current
+    // Database will be created on first access via ProfileAwareDatabaseHandler
 }
 ```
+
+### Legacy Backup Restore
+
+When restoring a backup that doesn't have profile metadata:
+
+```kotlin
+// In BackupRestorer
+fun restore(backup: Backup) {
+    if (backup.profileId == null) {
+        // Legacy backup from original Komikku or pre-profiles version
+        // Restore to current profile (which is Default on fresh install)
+        logcat { "Restoring legacy backup to current profile: ${profileManager.currentProfileId}" }
+    } else {
+        // Future: backup with profile info
+        // Could prompt user which profile to restore to
+    }
+    
+    // Proceed with restore to current profile's database
+    // (ProfileAwareDatabaseHandler handles this automatically)
+}
+```
+
+### Backup Format Update
+
+Add optional profile metadata to backup:
+```kotlin
+data class Backup(
+    // ... existing fields
+    val profileId: String? = null,      // null for legacy backups
+    val profileName: String? = null,    // For display purposes
+)
+```
+
+This allows future backups to be profile-aware while maintaining backward compatibility.
 
 ---
 
@@ -528,5 +564,15 @@ window.statusBarColor = profile.color
 - Preferences use **AndroidPreferenceStore** wrapping SharedPreferences
 - The wrapper pattern is chosen to minimize code changes
 - Activity recreation is required because SQLDelight Flows hold Query references
+- **Migration happens via backup restore** (not local file detection) due to signature conflict
+- Legacy backups (no profileId) should restore to current/default profile
 - Always test with existing user data (migration path)
 - The encrypted database feature (SY) needs consideration during migration
+
+## Package Name
+
+This fork uses a different package name to avoid signature conflicts:
+- Original: `app.komikku`
+- This fork: `app.komikku.s0methingsomething.fork`
+
+This allows installation alongside original Komikku if needed.
