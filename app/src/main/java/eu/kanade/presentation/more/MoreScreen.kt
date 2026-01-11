@@ -126,8 +126,7 @@ fun MoreScreen(
                     title = stringResource(MR.strings.pref_private_keyboard),
                     subtitle = stringResource(MR.strings.pref_private_keyboard_summary),
                     checked = privateKeyboardMode || incognitoMode,
-                    enabled = !incognitoMode,
-                    onCheckedChanged = onPrivateKeyboardModeChange,
+                    onCheckedChanged = { if (!incognitoMode) onPrivateKeyboardModeChange(it) },
                 )
             }
 
