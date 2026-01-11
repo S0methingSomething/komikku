@@ -62,7 +62,7 @@ class StorageManager(
     }
 
     private fun getBaseDir(uri: String): UniFile? {
-        return UniFile.fromUri(context, uri.toUri())
+        return uniFileFromUri(context, uri)
             .takeIf {
                 // KMK -->
                 it?.isAccessibleDirectory == true
@@ -100,7 +100,20 @@ class StorageManager(
          * Check if a directory is accessible
          */
         fun directoryAccessible(context: Context, uri: String): Boolean {
-            return UniFile.fromUri(context, uri.toUri())?.isAccessibleDirectory == true
+            return uniFileFromUri(context, uri)?.isAccessibleDirectory == true
+        }
+
+        /**
+         * Create UniFile from URI string, handling both file:// and content:// schemes
+         */
+        fun uniFileFromUri(context: Context, uri: String): UniFile? {
+            if (uri.isBlank()) return null
+            val parsed = uri.toUri()
+            return if (parsed.scheme == "file") {
+                parsed.path?.let { UniFile.fromFile(File(it)) }
+            } else {
+                UniFile.fromUri(context, parsed)
+            }
         }
 
         /**
