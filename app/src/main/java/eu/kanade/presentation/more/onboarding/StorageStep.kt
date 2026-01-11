@@ -83,7 +83,12 @@ internal class StorageStep : OnboardingStep {
 
             OutlinedButton(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { setInternalStorage(context, storagePref) },
+                onClick = {
+                    setInternalStorage(context, storagePref)
+                    if (!directoryAccessible(context, storagePref.get())) {
+                        context.toast(MR.strings.invalid_location)
+                    }
+                },
             ) {
                 Text(stringResource(MR.strings.onboarding_storage_action_internal))
             }
