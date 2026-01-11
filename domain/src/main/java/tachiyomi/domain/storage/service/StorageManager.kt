@@ -63,11 +63,7 @@ class StorageManager(
 
     private fun getBaseDir(uri: String): UniFile? {
         return uniFileFromUri(context, uri)
-            .takeIf {
-                // KMK -->
-                it?.isAccessibleDirectory == true
-                // KMK <--
-            }
+            .takeIf { it?.exists() == true }
     }
 
     fun getAutomaticBackupsDirectory(): UniFile? {

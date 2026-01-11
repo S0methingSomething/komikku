@@ -73,7 +73,6 @@ import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import logcat.LogPriority
 import tachiyomi.core.common.i18n.stringResource
@@ -86,7 +85,6 @@ import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetFavorites
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.storage.service.StorageManager.Companion.allowAccessStorage
-import tachiyomi.domain.storage.service.StorageManager.Companion.directoryAccessible
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -179,20 +177,7 @@ object SettingsDataScreen : SearchableSettings {
         val context = LocalContext.current
         val storageDir by storageDirPref.collectAsState()
 
-        // KMK -->
-        var locationValid by remember(storageDir) {
-            mutableStateOf(directoryAccessible(context, storageDir))
-        }
-
-        LaunchedEffect(storageDir) {
-            storageDirPref.changes()
-                .collectLatest {
-                    locationValid = directoryAccessible(context, storageDir)
-                }
-        }
-
-        if (!locationValid) {
-            // KMK <--
+        if (storageDir == storageDirPref.defaultValue()) {
             return stringResource(MR.strings.no_location_set)
         }
 
