@@ -100,6 +100,16 @@ class StorageManager(
         }
 
         /**
+         * Check if the current storage is internal app storage
+         */
+        fun isInternalStorage(context: Context, uri: String): Boolean {
+            if (uri.isBlank()) return false
+            val internalPath = context.getExternalFilesDir(null)?.absolutePath ?: return false
+            val currentPath = uniFileFromUri(context, uri)?.filePath ?: return false
+            return currentPath.startsWith(internalPath)
+        }
+
+        /**
          * Create UniFile from URI string, handling both file:// and content:// schemes
          */
         fun uniFileFromUri(context: Context, uri: String): UniFile? {

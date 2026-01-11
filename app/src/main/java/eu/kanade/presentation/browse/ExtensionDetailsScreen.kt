@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Launch
+import androidx.compose.material.icons.outlined.KeyboardHide
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
@@ -403,17 +404,26 @@ private fun DetailsHeader(
             },
         )
 
+        // Private keyboard as sub-option of incognito
         TextPreferenceWidget(
-            modifier = Modifier.padding(horizontal = MaterialTheme.padding.small),
+            modifier = Modifier
+                .padding(horizontal = MaterialTheme.padding.small)
+                .padding(start = MaterialTheme.padding.medium),
             title = stringResource(MR.strings.pref_private_keyboard),
-            subtitle = stringResource(MR.strings.pref_private_keyboard_extension_summary),
+            subtitle = if (extIncognitoMode) {
+                stringResource(MR.strings.pref_incognito_mode) // Show that it's enabled via incognito
+            } else {
+                stringResource(MR.strings.pref_private_keyboard_extension_summary)
+            },
+            icon = Icons.Outlined.KeyboardHide,
             widget = {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Switch(
-                        checked = extPrivateKeyboardMode,
+                        checked = extPrivateKeyboardMode || extIncognitoMode,
                         onCheckedChange = onExtPrivateKeyboardChange,
+                        enabled = !extIncognitoMode, // Disable when incognito is on
                         modifier = Modifier.padding(start = TrailingWidgetBuffer),
                     )
                 }

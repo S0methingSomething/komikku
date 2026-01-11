@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.UpIcon
+import eu.kanade.presentation.components.withPrivateMode
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.util.Screen
 import tachiyomi.i18n.MR
@@ -109,7 +110,7 @@ class SettingsSearchScreen : Screen() {
                                 textStyle = MaterialTheme.typography.bodyLarge
                                     .copy(color = MaterialTheme.colorScheme.onSurface),
                                 lineLimits = TextFieldLineLimits.SingleLine,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search).withPrivateMode(),
                                 onKeyboardAction = { focusManager.clearFocus() },
                                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                                 decorator = {

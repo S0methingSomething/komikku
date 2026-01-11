@@ -3,6 +3,9 @@ package eu.kanade.presentation.browse.components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.ViewModule
+import androidx.compose.material.icons.outlined.KeyboardHide
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -14,6 +17,7 @@ import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.DropdownMenu
+import eu.kanade.presentation.components.LocalPrivateKeyboardMode
 import eu.kanade.presentation.components.RadioMenuItem
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.tachiyomi.source.Source
@@ -48,12 +52,23 @@ fun BrowseSourceToolbar(
     // Avoid capturing unstable source in actions lambda
     val title = source?.name
     val isLocalSource = source is LocalSource
+    val privateKeyboardMode = LocalPrivateKeyboardMode.current
 
     var selectingDisplayMode by remember { mutableStateOf(false) }
 
     SearchToolbar(
         navigateUp = navigateUp,
-        titleContent = { AppBarTitle(title) },
+        titleContent = {
+            AppBarTitle(title)
+            // Show indicator when private keyboard is active
+            if (privateKeyboardMode) {
+                Icon(
+                    imageVector = Icons.Outlined.KeyboardHide,
+                    contentDescription = stringResource(MR.strings.pref_private_keyboard),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+        },
         searchQuery = searchQuery,
         onChangeSearchQuery = onSearchQueryChange,
         onSearch = onSearch,

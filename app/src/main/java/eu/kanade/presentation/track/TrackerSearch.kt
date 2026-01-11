@@ -69,6 +69,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.DropdownMenu
+import eu.kanade.presentation.components.withPrivateMode
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.theme.TachiyomiPreviewTheme
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
@@ -125,7 +126,7 @@ fun TrackerSearch(
                             textStyle = MaterialTheme.typography.bodyLarge
                                 .copy(color = MaterialTheme.colorScheme.onSurface),
                             lineLimits = TextFieldLineLimits.SingleLine,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search).withPrivateMode(),
                             onKeyboardAction = { dispatchQueryAndClearFocus() },
                             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                             decorator = {

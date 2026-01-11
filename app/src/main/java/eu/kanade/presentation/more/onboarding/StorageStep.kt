@@ -23,6 +23,7 @@ import eu.kanade.presentation.more.settings.screen.SettingsDataScreen
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
 import tachiyomi.domain.storage.service.StorageManager.Companion.directoryAccessible
+import tachiyomi.domain.storage.service.StorageManager.Companion.isInternalStorage
 import tachiyomi.domain.storage.service.StorageManager.Companion.setInternalStorage
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
@@ -49,12 +50,13 @@ internal class StorageStep : OnboardingStep {
 
         val pickStorageLocation = SettingsDataScreen.storageLocationPicker(storagePref)
 
-        // KMK -->
         val storageDir by storagePref.collectAsState()
         var locationValid by remember(storageDir) {
             mutableStateOf(directoryAccessible(context, storageDir))
         }
-        // KMK <--
+        val isInternal = remember(storageDir) {
+            isInternalStorage(context, storageDir)
+        }
 
         Column(
             modifier = Modifier.padding(16.dp),
@@ -68,29 +70,60 @@ internal class StorageStep : OnboardingStep {
                 ),
             )
 
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    try {
-                        pickStorageLocation.launch(null)
-                    } catch (e: ActivityNotFoundException) {
-                        context.toast(MR.strings.file_picker_error)
-                    }
-                },
-            ) {
-                Text(stringResource(MR.strings.onboarding_storage_action_select))
+            // Custom storage button - filled when custom is selected
+            if (locationValid && !isInternal) {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        try {
+                            pickStorageLocation.launch(null)
+                        } catch (e: ActivityNotFoundException) {
+                            context.toast(MR.strings.file_picker_error)
+                        }
+                    },
+                ) {
+                    Text(stringResource(MR.strings.onboarding_storage_action_select))
+                }
+            } else {
+                OutlinedButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        try {
+                            pickStorageLocation.launch(null)
+                        } catch (e: ActivityNotFoundException) {
+                            context.toast(MR.strings.file_picker_error)
+                        }
+                    },
+                ) {
+                    Text(stringResource(MR.strings.onboarding_storage_action_select))
+                }
             }
 
-            OutlinedButton(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    setInternalStorage(context, storagePref)
-                    if (!directoryAccessible(context, storagePref.get())) {
-                        context.toast(MR.strings.invalid_location)
-                    }
-                },
-            ) {
-                Text(stringResource(MR.strings.onboarding_storage_action_internal))
+            // Internal storage button - filled when internal is selected
+            if (locationValid && isInternal) {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        setInternalStorage(context, storagePref)
+                        if (!directoryAccessible(context, storagePref.get())) {
+                            context.toast(MR.strings.invalid_location)
+                        }
+                    },
+                ) {
+                    Text(stringResource(MR.strings.onboarding_storage_action_internal))
+                }
+            } else {
+                OutlinedButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        setInternalStorage(context, storagePref)
+                        if (!directoryAccessible(context, storagePref.get())) {
+                            context.toast(MR.strings.invalid_location)
+                        }
+                    },
+                ) {
+                    Text(stringResource(MR.strings.onboarding_storage_action_internal))
+                }
             }
 
             HorizontalDivider(
@@ -107,13 +140,11 @@ internal class StorageStep : OnboardingStep {
             }
         }
 
-        LaunchedEffect(/* KMK --> */storageDir/* KMK <-- */) {
+        LaunchedEffect(storageDir) {
             storagePref.changes()
                 .collectLatest {
-                    // KMK -->
                     locationValid = directoryAccessible(context, storageDir)
                     _isComplete = locationValid
-                    // KMK <--
                 }
         }
     }

@@ -405,51 +405,53 @@ data class BrowseSourceScreen(
         val onDismissRequest = { screenModel.setDialog(null) }
         when (val dialog = state.dialog) {
             is BrowseSourceScreenModel.Dialog.Filter -> {
-                SourceFilterDialog(
-                    onDismissRequest = onDismissRequest,
-                    filters = state.filters,
-                    onReset = screenModel::resetFilters,
-                    onFilter = { screenModel.search(filters = state.filters) },
-                    onUpdate = screenModel::setFilters,
-                    // SY -->
-                    startExpanded = screenModel.startExpanded,
-                    onSave = screenModel::onSaveSearch,
-                    savedSearches = state.savedSearches,
-                    onSavedSearch = { search ->
-                        screenModel.onSavedSearch(search) {
-                            context.toast(it)
-                        }
-                    },
-                    onSavedSearchPress = screenModel::onSavedSearchPress,
-                    // KMK -->
-                    onSavedSearchPressDesc = stringResource(KMR.strings.saved_searches_delete),
-                    // KMK <--
-                    openMangaDexRandom = if (screenModel.source.isMdBasedSource()) {
-                        {
-                            screenModel.onMangaDexRandom {
-                                navigator.replace(
-                                    BrowseSourceScreen(
-                                        sourceId,
-                                        "id:$it",
-                                    ),
-                                )
+                ProvidePrivateKeyboardMode(enabled = screenModel.privateKeyboardMode.value) {
+                    SourceFilterDialog(
+                        onDismissRequest = onDismissRequest,
+                        filters = state.filters,
+                        onReset = screenModel::resetFilters,
+                        onFilter = { screenModel.search(filters = state.filters) },
+                        onUpdate = screenModel::setFilters,
+                        // SY -->
+                        startExpanded = screenModel.startExpanded,
+                        onSave = screenModel::onSaveSearch,
+                        savedSearches = state.savedSearches,
+                        onSavedSearch = { search ->
+                            screenModel.onSavedSearch(search) {
+                                context.toast(it)
                             }
-                        }
-                    } else {
-                        null
-                    },
-                    openMangaDexFollows = if (screenModel.source.isMdBasedSource()) {
-                        {
-                            // KMK -->
-                            // navigator.replace(MangaDexFollowsScreen(sourceId))
-                            navigator.push(MangaDexFollowsScreen(sourceId))
-                            // KMK <--
-                        }
-                    } else {
-                        null
-                    },
-                    // SY <--
-                )
+                        },
+                        onSavedSearchPress = screenModel::onSavedSearchPress,
+                        // KMK -->
+                        onSavedSearchPressDesc = stringResource(KMR.strings.saved_searches_delete),
+                        // KMK <--
+                        openMangaDexRandom = if (screenModel.source.isMdBasedSource()) {
+                            {
+                                screenModel.onMangaDexRandom {
+                                    navigator.replace(
+                                        BrowseSourceScreen(
+                                            sourceId,
+                                            "id:$it",
+                                        ),
+                                    )
+                                }
+                            }
+                        } else {
+                            null
+                        },
+                        openMangaDexFollows = if (screenModel.source.isMdBasedSource()) {
+                            {
+                                // KMK -->
+                                // navigator.replace(MangaDexFollowsScreen(sourceId))
+                                navigator.push(MangaDexFollowsScreen(sourceId))
+                                // KMK <--
+                            }
+                        } else {
+                            null
+                        },
+                        // SY <--
+                    )
+                }
             }
             is BrowseSourceScreenModel.Dialog.AddDuplicateManga -> {
                 DuplicateMangaDialog(

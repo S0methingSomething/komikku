@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -388,7 +389,12 @@ fun TriStateItem(
 }
 
 @Composable
-fun TextItem(label: String, value: String, onChange: (String) -> Unit) {
+fun TextItem(
+    label: String,
+    value: String,
+    onChange: (String) -> Unit,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+) {
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
@@ -397,6 +403,7 @@ fun TextItem(label: String, value: String, onChange: (String) -> Unit) {
         value = value,
         onValueChange = onChange,
         singleLine = true,
+        keyboardOptions = keyboardOptions,
     )
 }
 

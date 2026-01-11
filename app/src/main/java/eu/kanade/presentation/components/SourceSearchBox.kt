@@ -123,7 +123,7 @@ fun SourcesSearchBox(
         textStyle = MaterialTheme.typography.bodyMedium.copy(
             color = MaterialTheme.colorScheme.onBackground,
         ),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search).withPrivateMode(),
         keyboardActions = KeyboardActions(onSearch = { searchAndClearFocus() }),
         singleLine = true,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.onBackground),
