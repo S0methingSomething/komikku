@@ -662,6 +662,7 @@
     <string name="pref_incognito_mode_summary">Pauses reading history</string>
     <string name="pref_incognito_mode_extension_summary">Pause reading history for extension</string>
     <string name="pref_private_keyboard">Private keyboard</string>
+    <string name="pref_private_keyboard_summary">Prevent keyboard from learning your searches</string>
     <string name="pref_private_keyboard_extension_summary">Prevent keyboard from learning your searches</string>
     <string name="notification_incognito_text">Disable incognito mode</string>
     <string name="downloaded_only_summary">Filters all entries in your library</string>

@@ -19,6 +19,8 @@ class BasePreferences(
 
     fun incognitoMode() = preferenceStore.getBoolean(Preference.appStateKey("incognito_mode"), false)
 
+    fun privateKeyboardMode() = preferenceStore.getBoolean(Preference.appStateKey("private_keyboard_mode"), false)
+
     fun extensionInstaller() = ExtensionInstallerPreference(context, preferenceStore)
 
     fun shownOnboardingFlow() = preferenceStore.getBoolean(Preference.appStateKey("onboarding_complete"), false)

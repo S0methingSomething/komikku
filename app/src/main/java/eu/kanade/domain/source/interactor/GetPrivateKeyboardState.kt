@@ -16,21 +16,28 @@ class GetPrivateKeyboardState(
 ) {
     fun await(sourceId: Long?): Boolean {
         if (basePreferences.incognitoMode().get()) return true
+        if (basePreferences.privateKeyboardMode().get()) return true
         if (sourceId == null) return false
         val source = sourceManager.get(sourceId) ?: return false
         return source.isIncognitoModeEnabled() || source.isPrivateKeyboardEnabled()
     }
 
     fun subscribe(sourceId: Long?): Flow<Boolean> {
-        if (sourceId == null) return basePreferences.incognitoMode().changes()
+        if (sourceId == null) {
+            return combine(
+                basePreferences.incognitoMode().changes(),
+                basePreferences.privateKeyboardMode().changes(),
+            ) { incognito, privateKeyboard -> incognito || privateKeyboard }.distinctUntilChanged()
+        }
 
         return combine(
             basePreferences.incognitoMode().changes(),
+            basePreferences.privateKeyboardMode().changes(),
             sourcePreferences.incognitoExtensions().changes(),
             sourcePreferences.privateKeyboardExtensions().changes(),
-        ) { incognito, incognitoExtensions, privateKeyboardExtensions ->
-            val source = sourceManager.get(sourceId) ?: return@combine incognito
-            incognito ||
+        ) { incognito, privateKeyboard, incognitoExtensions, privateKeyboardExtensions ->
+            val source = sourceManager.get(sourceId) ?: return@combine incognito || privateKeyboard
+            incognito || privateKeyboard ||
                 source.isIncognitoModeEnabled(incognitoExtensions) ||
                 source.isPrivateKeyboardEnabled(privateKeyboardExtensions)
         }.distinctUntilChanged()

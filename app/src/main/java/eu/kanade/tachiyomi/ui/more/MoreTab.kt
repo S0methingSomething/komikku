@@ -76,6 +76,8 @@ data object MoreTab : Tab {
             onDownloadedOnlyChange = { screenModel.downloadedOnly = it },
             incognitoMode = screenModel.incognitoMode,
             onIncognitoModeChange = { screenModel.incognitoMode = it },
+            privateKeyboardMode = screenModel.privateKeyboardMode,
+            onPrivateKeyboardModeChange = { screenModel.privateKeyboardMode = it },
             // SY -->
             showNavUpdates = screenModel.showNavUpdates,
             showNavHistory = screenModel.showNavHistory,
@@ -116,6 +118,7 @@ private class MoreScreenModel(
 
     var downloadedOnly by preferences.downloadedOnly().asState(screenModelScope)
     var incognitoMode by preferences.incognitoMode().asState(screenModelScope)
+    var privateKeyboardMode by preferences.privateKeyboardMode().asState(screenModelScope)
 
     // SY -->
     val showNavUpdates by uiPreferences.showNavUpdates().asState(screenModelScope)

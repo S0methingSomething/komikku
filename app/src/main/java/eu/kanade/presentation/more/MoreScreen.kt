@@ -64,6 +64,8 @@ fun MoreScreen(
     onDownloadedOnlyChange: (Boolean) -> Unit,
     incognitoMode: Boolean,
     onIncognitoModeChange: (Boolean) -> Unit,
+    privateKeyboardMode: Boolean,
+    onPrivateKeyboardModeChange: (Boolean) -> Unit,
     // SY -->
     showNavUpdates: Boolean,
     showNavHistory: Boolean,
@@ -116,6 +118,16 @@ fun MoreScreen(
                     // KMK <--
                     checked = incognitoMode,
                     onCheckedChanged = onIncognitoModeChange,
+                )
+            }
+            item {
+                SwitchPreferenceWidget(
+                    modifier = Modifier.padding(start = 24.dp),
+                    title = stringResource(MR.strings.pref_private_keyboard),
+                    subtitle = stringResource(MR.strings.pref_private_keyboard_summary),
+                    checked = privateKeyboardMode || incognitoMode,
+                    enabled = !incognitoMode,
+                    onCheckedChanged = onPrivateKeyboardModeChange,
                 )
             }
 
