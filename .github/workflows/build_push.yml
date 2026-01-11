@@ -2,22 +2,11 @@ name: CI
 on:
   push:
     branches:
-      # - develop
       - master
     paths:
       - '**'
       - '!**.md'
-  # pull_request:
-  #   paths-ignore:
-  #     - '**.md'
-  # Dispatch or Manual triggers
   workflow_dispatch:
-    inputs:
-      skip-signing:
-        description: 'Skip signing and Google services (test build only)'
-        required: false
-        default: false
-        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -43,35 +32,14 @@ jobs:
           java-version: 17
           distribution: temurin
 
-      - name: Write google-services.json
-        if: ${{ !inputs.skip-signing }}
-        uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
-        with:
-          path: app/google-services.json
-          contents: ${{ secrets.GOOGLE_SERVICES_JSON }}
-          write-mode: overwrite
-
-      - name: Write client_secrets.json
-        if: ${{ !inputs.skip-signing }}
-        uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
-        with:
-          path: app/src/main/assets/client_secrets.json
-          contents: ${{ secrets.GOOGLE_CLIENT_SECRETS_JSON }}
-          write-mode: overwrite
-
       - name: Set up gradle
         uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5
 
       - name: Check code format
         run: ./gradlew spotlessCheck
 
-      - name: Build app (full)
-        if: ${{ !inputs.skip-signing }}
-        run: ./gradlew assemblePreview -Pinclude-telemetry -Penable-updater
-
-      - name: Build app (test only)
-        if: ${{ inputs.skip-signing }}
-        run: ./gradlew assemblePreview assembleRelease
+      - name: Build app
+        run: ./gradlew assemblePreview
 
       - name: Run unit tests
         id: unit_tests
@@ -85,7 +53,6 @@ jobs:
           path: app/build/reports/tests/testReleaseUnitTest
 
       - name: Sign APK
-        if: ${{ !inputs.skip-signing }}
         uses: r0adkll/sign-android-release@f30bdd30588842ac76044ecdbd4b6d0e3e813478
         with:
           releaseDirectory: app/build/outputs/apk/preview
@@ -97,37 +64,15 @@ jobs:
           BUILD_TOOLS_VERSION: '35.0.1'
 
       - name: Rename apk
-        if: ${{ !inputs.skip-signing }}
         id: current_commit
         run: |
           set -e
-          version_tag=$(echo ${GITHUB_REF/refs\/heads\//} | sed -r 's/^refs\/(heads|tags)\///' | sed -r 's/[-\/]+/_/g')
           commit_count=$(git rev-list --count HEAD)
-          echo "VERSION_TAG=$version_tag"
-          echo "VERSION_TAG=$version_tag" >> $GITHUB_OUTPUT
-          echo "COMMIT_COUNT=$commit_count"
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_OUTPUT
-          mv app/build/outputs/apk/preview/app-universal-preview-signed.apk Komikku-$version_tag-r$commit_count.apk
+          mv app/build/outputs/apk/preview/app-universal-preview-signed.apk Komikku-r$commit_count.apk
 
       - name: Upload APK
-        if: ${{ !inputs.skip-signing }}
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
-          name: Komikku-${{ steps.current_commit.outputs.VERSION_TAG }}-r${{ steps.current_commit.outputs.COMMIT_COUNT }}.apk
+          name: Komikku-r${{ steps.current_commit.outputs.COMMIT_COUNT }}.apk
           path: ./*.apk
-
-      - name: Upload debug APK
-        if: ${{ inputs.skip-signing }}
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
-        with:
-          name: Komikku-unsigned-${{ github.sha }}
-          path: |
-            app/build/outputs/apk/preview/*.apk
-            app/build/outputs/apk/release/*.apk
-
-      - name: Upload mapping
-        if: ${{ !inputs.skip-signing }}
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
-        with:
-          name: mapping-${{ github.sha }}
-          path: app/build/outputs/mapping/preview
