@@ -180,11 +180,12 @@ private fun FilterItem(filter: Filter<*>, onUpdate: () -> Unit/* SY --> */, star
             TextItem(
                 label = filter.name,
                 value = filter.state,
+                onChange = {
+                    filter.state = it
+                    onUpdate()
+                },
                 keyboardOptions = KeyboardOptions.Default.withPrivateMode(),
-            ) {
-                filter.state = it
-                onUpdate()
-            }
+            )
         }
         is Filter.Select<*> -> {
             SelectItem(
