@@ -3,6 +3,8 @@ package eu.kanade.domain.manga.interactor
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
+import logcat.LogPriority
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetManga
@@ -32,20 +34,37 @@ class GetReadingPromptState(
         sessionIgnoredIds: Set<Long>,
     ): ReadingPromptState {
         // 1. Return None if incognito mode
-        if (basePreferences.incognitoMode().get()) return ReadingPromptState.None
+        if (basePreferences.incognitoMode().get()) {
+            logcat(LogPriority.DEBUG) { "ReadingPrompt: None - incognito mode" }
+            return ReadingPromptState.None
+        }
 
         val autoAddEnabled = libraryPreferences.autoAddToLibraryEnabled().get()
         val trackingEnabled = libraryPreferences.forcedTrackingEnabled().get()
 
+        logcat(LogPriority.DEBUG) { "ReadingPrompt: autoAddEnabled=$autoAddEnabled, trackingEnabled=$trackingEnabled" }
+
         // 2. Return None if both features disabled
-        if (!autoAddEnabled && !trackingEnabled) return ReadingPromptState.None
+        if (!autoAddEnabled && !trackingEnabled) {
+            logcat(LogPriority.DEBUG) { "ReadingPrompt: None - both features disabled" }
+            return ReadingPromptState.None
+        }
 
         // 3. Return None if mangaId in sessionIgnoredIds
-        if (mangaId in sessionIgnoredIds) return ReadingPromptState.None
+        if (mangaId in sessionIgnoredIds) {
+            logcat(LogPriority.DEBUG) { "ReadingPrompt: None - manga in session ignored" }
+            return ReadingPromptState.None
+        }
 
         // 4. Get manga and check skipTracking
-        val manga = getManga.await(mangaId) ?: return ReadingPromptState.None
-        if (manga.skipTracking) return ReadingPromptState.None
+        val manga = getManga.await(mangaId) ?: run {
+            logcat(LogPriority.DEBUG) { "ReadingPrompt: None - manga not found" }
+            return ReadingPromptState.None
+        }
+        if (manga.skipTracking) {
+            logcat(LogPriority.DEBUG) { "ReadingPrompt: None - skipTracking flag set" }
+            return ReadingPromptState.None
+        }
 
         // 5. Get read chapter count
         val chapters = getChaptersByMangaId.await(mangaId)
@@ -74,12 +93,18 @@ class GetReadingPromptState(
         val alreadyLinkedTrackers = trackersToCheck.filter { it.id in linkedTrackerIds }
         val missingTrackers = trackersToCheck.filter { it.id !in linkedTrackerIds }
 
+        logcat(LogPriority.DEBUG) {
+            "ReadingPrompt: readCount=$readCount, inLibrary=$inLibrary, " +
+                "loggedInTrackers=${loggedInTrackers.size}, missingTrackers=${missingTrackers.size}"
+        }
+
         // 8. Determine which prompts apply
         var showLibraryPrompt = false
         var showTrackingPrompt = false
 
         if (autoAddEnabled && !inLibrary) {
             val threshold = libraryPreferences.autoAddToLibraryThreshold().get()
+            logcat(LogPriority.DEBUG) { "ReadingPrompt: library check - readCount=$readCount >= threshold=$threshold" }
             if (readCount >= threshold) {
                 showLibraryPrompt = true
             }
@@ -87,10 +112,13 @@ class GetReadingPromptState(
 
         if (trackingEnabled && loggedInTrackers.isNotEmpty() && missingTrackers.isNotEmpty()) {
             val threshold = libraryPreferences.forcedTrackingThreshold().get()
+            logcat(LogPriority.DEBUG) { "ReadingPrompt: tracking check - readCount=$readCount >= threshold=$threshold" }
             if (readCount >= threshold) {
                 showTrackingPrompt = true
             }
         }
+
+        logcat(LogPriority.DEBUG) { "ReadingPrompt: showLibraryPrompt=$showLibraryPrompt, showTrackingPrompt=$showTrackingPrompt" }
 
         return if (showLibraryPrompt || showTrackingPrompt) {
             ReadingPromptState.ShowPrompt(

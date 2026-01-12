@@ -228,6 +228,7 @@ object SettingsTrackingScreen : SearchableSettings {
         val loggedInTrackers = remember(trackerManager) {
             trackerManager.trackers.filter { it.isLoggedIn && it !is EnhancedTracker }
         }
+        val hasLoggedInTrackers = loggedInTrackers.isNotEmpty()
         val trackerEntries = remember(loggedInTrackers) {
             loggedInTrackers.associate { it.id.toString() to it.name }.toImmutableMap()
         }
@@ -235,6 +236,7 @@ object SettingsTrackingScreen : SearchableSettings {
         return Preference.PreferenceGroup(
             title = stringResource(KMR.strings.pref_reading_prompts),
             preferenceItems = persistentListOf(
+                // Library prompt settings
                 Preference.PreferenceItem.SwitchPreference(
                     preference = libraryPreferences.autoAddToLibraryEnabled(),
                     title = stringResource(KMR.strings.pref_auto_add_to_library),
@@ -243,27 +245,36 @@ object SettingsTrackingScreen : SearchableSettings {
                 Preference.PreferenceItem.SliderPreference(
                     value = autoAddThreshold,
                     valueRange = 0..10,
-                    title = stringResource(KMR.strings.pref_chapters_before_prompt),
+                    title = stringResource(KMR.strings.pref_library_chapters_threshold),
+                    subtitle = stringResource(KMR.strings.pref_library_chapters_threshold_summary),
                     enabled = autoAddEnabled,
                     onValueChanged = { libraryPreferences.autoAddToLibraryThreshold().set(it) },
                 ),
+                // Tracking prompt settings
                 Preference.PreferenceItem.SwitchPreference(
                     preference = libraryPreferences.forcedTrackingEnabled(),
                     title = stringResource(KMR.strings.pref_forced_tracking),
-                    subtitle = stringResource(KMR.strings.pref_forced_tracking_summary),
+                    subtitle = if (hasLoggedInTrackers) {
+                        stringResource(KMR.strings.pref_forced_tracking_summary)
+                    } else {
+                        stringResource(KMR.strings.pref_forced_tracking_no_trackers)
+                    },
+                    enabled = hasLoggedInTrackers,
                 ),
                 Preference.PreferenceItem.SliderPreference(
                     value = trackingThreshold,
                     valueRange = 0..10,
-                    title = stringResource(KMR.strings.pref_chapters_before_prompt),
-                    enabled = trackingEnabled,
+                    title = stringResource(KMR.strings.pref_tracking_chapters_threshold),
+                    subtitle = stringResource(KMR.strings.pref_tracking_chapters_threshold_summary),
+                    enabled = trackingEnabled && hasLoggedInTrackers,
                     onValueChanged = { libraryPreferences.forcedTrackingThreshold().set(it) },
                 ),
                 Preference.PreferenceItem.MultiSelectListPreference(
                     preference = libraryPreferences.requiredTrackerIds(),
                     entries = trackerEntries,
                     title = stringResource(KMR.strings.pref_required_trackers),
-                    enabled = trackingEnabled && trackerEntries.isNotEmpty(),
+                    subtitle = stringResource(KMR.strings.pref_required_trackers_summary),
+                    enabled = trackingEnabled && hasLoggedInTrackers,
                 ),
             ),
         )

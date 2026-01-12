@@ -1,12 +1,19 @@
 package eu.kanade.presentation.reader
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
@@ -19,6 +26,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.track.MultiTrackerSearch
@@ -65,59 +74,94 @@ fun ReadingPromptDialog(
         else -> ""
     }
 
+    // Responsive sizing based on screen
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    val maxDialogHeight = (screenHeight * 0.7f).coerceIn(250.dp, 500.dp)
+
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text(text = title) },
+        title = {
+            Text(
+                text = title,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
         text = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 200.dp, max = 450.dp),
+                    .sizeIn(minHeight = 150.dp, maxHeight = maxDialogHeight),
             ) {
-                if (showLibraryPrompt) {
-                    Text(
-                        text = stringResource(KMR.strings.reading_prompt_select_categories),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
+                AnimatedVisibility(
+                    visible = showLibraryPrompt,
+                    enter = fadeIn(spring(stiffness = Spring.StiffnessMedium)) +
+                        expandVertically(spring(stiffness = Spring.StiffnessMedium)),
+                    exit = fadeOut(spring(stiffness = Spring.StiffnessMedium)) +
+                        shrinkVertically(spring(stiffness = Spring.StiffnessMedium)),
+                ) {
                     Column(
-                        modifier = Modifier
-                            .weight(if (showTrackingPrompt) 0.3f else 1f)
-                            .verticalScroll(rememberScrollState()),
+                        modifier = Modifier.weight(
+                            weight = if (showTrackingPrompt) 0.3f else 1f,
+                            fill = false,
+                        ),
                     ) {
-                        if (categories.isEmpty()) {
-                            // Show default option when no categories
-                            Text(
-                                text = stringResource(MR.strings.default_category),
-                                modifier = Modifier.padding(MaterialTheme.padding.medium),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        categories.forEach { category ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onToggleCategory(category.id) },
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Checkbox(
-                                    checked = category.id in selectedCategoryIds,
-                                    onCheckedChange = { onToggleCategory(category.id) },
-                                )
+                        Text(
+                            text = stringResource(KMR.strings.reading_prompt_select_categories),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        Column(
+                            modifier = Modifier.verticalScroll(rememberScrollState()),
+                        ) {
+                            if (categories.isEmpty()) {
                                 Text(
-                                    text = category.visualName,
-                                    modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                    text = stringResource(MR.strings.default_category),
+                                    modifier = Modifier.padding(MaterialTheme.padding.medium),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
+                            }
+                            categories.forEach { category ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { onToggleCategory(category.id) },
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Checkbox(
+                                        checked = category.id in selectedCategoryIds,
+                                        onCheckedChange = { onToggleCategory(category.id) },
+                                    )
+                                    Text(
+                                        text = category.visualName,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(end = MaterialTheme.padding.medium),
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
                             }
                         }
                     }
                 }
 
-                if (showLibraryPrompt && showTrackingPrompt) {
+                AnimatedVisibility(
+                    visible = showLibraryPrompt && showTrackingPrompt,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
                     HorizontalDivider(modifier = Modifier.padding(vertical = MaterialTheme.padding.small))
                 }
 
-                if (showTrackingPrompt) {
+                AnimatedVisibility(
+                    visible = showTrackingPrompt,
+                    enter = fadeIn(spring(stiffness = Spring.StiffnessMedium)) +
+                        expandVertically(spring(stiffness = Spring.StiffnessMedium)),
+                    exit = fadeOut(spring(stiffness = Spring.StiffnessMedium)) +
+                        shrinkVertically(spring(stiffness = Spring.StiffnessMedium)),
+                ) {
                     MultiTrackerSearch(
                         searchState = searchState,
                         onSearch = onSearch,

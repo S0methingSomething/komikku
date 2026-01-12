@@ -1,15 +1,22 @@
 package eu.kanade.presentation.track
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -33,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.withPrivateMode
 import eu.kanade.tachiyomi.data.track.Tracker
@@ -51,7 +59,6 @@ sealed class TrackerSearchState {
     data class Error(val message: String) : TrackerSearchState()
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MultiTrackerSearch(
     searchState: TextFieldState,
@@ -119,10 +126,11 @@ fun MultiTrackerSearch(
 
         HorizontalDivider(modifier = Modifier.padding(vertical = MaterialTheme.padding.small))
 
-        // Tracker chips
-        FlowRow(
+        // Tracker chips - horizontally scrollable for small screens
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
                 .padding(horizontal = MaterialTheme.padding.medium),
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.small),
         ) {
@@ -133,7 +141,13 @@ fun MultiTrackerSearch(
                 FilterChip(
                     selected = isEnabled,
                     onClick = { if (!isLinked) onToggleTracker(tracker.id) },
-                    label = { Text(tracker.name) },
+                    label = {
+                        Text(
+                            text = tracker.name,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
                     leadingIcon = if (isLinked) {
                         { Icon(Icons.Default.Lock, contentDescription = null) }
                     } else if (isEnabled) {
@@ -163,6 +177,8 @@ fun MultiTrackerSearch(
                         text = tracker.name + if (isLinked) " ✓" else "",
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
 
@@ -172,56 +188,79 @@ fun MultiTrackerSearch(
                     }
                     is TrackerSearchState.Loading -> {
                         item(key = "loading-${tracker.id}") {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(MaterialTheme.padding.medium),
-                                horizontalArrangement = Arrangement.Center,
+                            AnimatedVisibility(
+                                visible = true,
+                                enter = fadeIn(spring(stiffness = Spring.StiffnessMedium)),
                             ) {
-                                CircularProgressIndicator()
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(MaterialTheme.padding.medium),
+                                    horizontalArrangement = Arrangement.Center,
+                                ) {
+                                    CircularProgressIndicator()
+                                }
                             }
                         }
                     }
                     is TrackerSearchState.Success -> {
                         if (state.results.isEmpty()) {
                             item(key = "empty-${tracker.id}") {
-                                Text(
-                                    text = stringResource(MR.strings.no_results_found),
-                                    modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
+                                AnimatedVisibility(
+                                    visible = true,
+                                    enter = fadeIn() + expandVertically(),
+                                ) {
+                                    Text(
+                                        text = stringResource(MR.strings.no_results_found),
+                                        modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
                             }
                         } else {
                             items(
                                 items = state.results,
                                 key = { "result-${tracker.id}-${it.hashCode()}" },
                             ) { result ->
-                                SearchResultItem(
-                                    trackSearch = result,
-                                    selected = selectedResults[tracker.id] == result,
-                                    onClick = { onSelectResult(tracker.id, result) },
-                                )
+                                AnimatedVisibility(
+                                    visible = true,
+                                    enter = fadeIn(spring(stiffness = Spring.StiffnessLow)) +
+                                        expandVertically(spring(stiffness = Spring.StiffnessLow)),
+                                ) {
+                                    SearchResultItem(
+                                        trackSearch = result,
+                                        selected = selectedResults[tracker.id] == result,
+                                        onClick = { onSelectResult(tracker.id, result) },
+                                    )
+                                }
                             }
                         }
                     }
                     is TrackerSearchState.Error -> {
                         item(key = "error-${tracker.id}") {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = MaterialTheme.padding.medium),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
+                            AnimatedVisibility(
+                                visible = true,
+                                enter = fadeIn() + expandVertically(),
                             ) {
-                                Text(
-                                    text = state.message,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.weight(1f),
-                                )
-                                TextButton(onClick = { onRetry(tracker.id) }) {
-                                    Text(stringResource(MR.strings.action_retry))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = MaterialTheme.padding.medium),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = state.message,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.weight(1f),
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                    TextButton(onClick = { onRetry(tracker.id) }) {
+                                        Text(stringResource(MR.strings.action_retry))
+                                    }
                                 }
                             }
                         }
@@ -246,6 +285,9 @@ fun MultiTrackerSearch(
             Text(
                 text = stringResource(KMR.strings.reading_prompt_dont_track_series),
                 style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
