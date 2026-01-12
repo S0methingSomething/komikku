@@ -250,7 +250,7 @@ object SettingsTrackingScreen : SearchableSettings {
                     enabled = autoAddEnabled,
                     onValueChanged = { libraryPreferences.autoAddToLibraryThreshold().set(it) },
                 ),
-                // Tracking prompt settings
+                // Tracking prompt settings - always visible, subtitle explains if no trackers
                 Preference.PreferenceItem.SwitchPreference(
                     preference = libraryPreferences.forcedTrackingEnabled(),
                     title = stringResource(KMR.strings.pref_forced_tracking),
@@ -259,22 +259,25 @@ object SettingsTrackingScreen : SearchableSettings {
                     } else {
                         stringResource(KMR.strings.pref_forced_tracking_no_trackers)
                     },
-                    enabled = hasLoggedInTrackers,
                 ),
                 Preference.PreferenceItem.SliderPreference(
                     value = trackingThreshold,
                     valueRange = 0..10,
                     title = stringResource(KMR.strings.pref_tracking_chapters_threshold),
                     subtitle = stringResource(KMR.strings.pref_tracking_chapters_threshold_summary),
-                    enabled = trackingEnabled && hasLoggedInTrackers,
+                    enabled = trackingEnabled,
                     onValueChanged = { libraryPreferences.forcedTrackingThreshold().set(it) },
                 ),
                 Preference.PreferenceItem.MultiSelectListPreference(
                     preference = libraryPreferences.requiredTrackerIds(),
                     entries = trackerEntries,
                     title = stringResource(KMR.strings.pref_required_trackers),
-                    subtitle = stringResource(KMR.strings.pref_required_trackers_summary),
-                    enabled = trackingEnabled && hasLoggedInTrackers,
+                    subtitle = if (hasLoggedInTrackers) {
+                        stringResource(KMR.strings.pref_required_trackers_summary)
+                    } else {
+                        stringResource(KMR.strings.pref_forced_tracking_no_trackers)
+                    },
+                    enabled = trackingEnabled,
                 ),
             ),
         )
