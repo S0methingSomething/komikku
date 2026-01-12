@@ -10,6 +10,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.model.toDbChapter
+import eu.kanade.domain.manga.interactor.GetReadingPromptState
+import eu.kanade.domain.manga.interactor.ReadingPromptState
 import eu.kanade.domain.manga.interactor.SetMangaViewerFlags
 import eu.kanade.domain.manga.model.readerOrientation
 import eu.kanade.domain.manga.model.readingMode
@@ -139,6 +141,9 @@ class ReaderViewModel @JvmOverloads constructor(
     private val getMergedReferencesById: GetMergedReferencesById = Injekt.get(),
     private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId = Injekt.get(),
     // SY <--
+    // S0M -->
+    private val getReadingPromptState: GetReadingPromptState = Injekt.get(),
+    // S0M <--
 ) : ViewModel() {
 
     private val mutableState = MutableStateFlow(State())
@@ -146,6 +151,12 @@ class ReaderViewModel @JvmOverloads constructor(
 
     private val eventChannel = Channel<Event>()
     val eventFlow = eventChannel.receiveAsFlow()
+
+    // S0M -->
+    private val sessionIgnoredMangaIds = mutableSetOf<Long>()
+    private val _readingPromptState = MutableStateFlow<ReadingPromptState?>(null)
+    val readingPromptState = _readingPromptState.asStateFlow()
+    // S0M <--
 
     /**
      * The manga loaded in the reader. It can be null when instantiated for a short time.
@@ -852,6 +863,15 @@ class ReaderViewModel @JvmOverloads constructor(
         updateTrackChapterRead(readerChapter)
         deleteChapterIfNeeded(readerChapter)
 
+        // S0M -->
+        manga?.id?.let { mangaId ->
+            val promptState = getReadingPromptState.await(mangaId, sessionIgnoredMangaIds)
+            if (promptState is ReadingPromptState.ShowPrompt) {
+                _readingPromptState.value = promptState
+            }
+        }
+        // S0M <--
+
         val markDuplicateAsRead = libraryPreferences.markDuplicateReadChapterAsRead().get()
             .contains(LibraryPreferences.MARK_DUPLICATE_CHAPTER_READ_EXISTING)
         if (!markDuplicateAsRead) return
@@ -1441,6 +1461,17 @@ class ReaderViewModel @JvmOverloads constructor(
             tempFileManager.deleteTempFiles()
         }
     }
+
+    // S0M -->
+    fun onPromptNotNow() {
+        manga?.id?.let { sessionIgnoredMangaIds.add(it) }
+        _readingPromptState.value = null
+    }
+
+    fun onPromptDismiss() {
+        _readingPromptState.value = null
+    }
+    // S0M <--
 
     @Immutable
     data class State(
