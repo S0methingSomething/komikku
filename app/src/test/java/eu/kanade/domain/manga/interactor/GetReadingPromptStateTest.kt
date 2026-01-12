@@ -1,7 +1,7 @@
 package eu.kanade.domain.manga.interactor
 
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.tachiyomi.data.track.Tracker
+import eu.kanade.tachiyomi.data.track.BaseTracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -136,7 +136,7 @@ class GetReadingPromptStateTest {
         every { libraryPreferences.forcedTrackingEnabled() } returns mockPreference(true)
         every { libraryPreferences.requiredTrackerIds() } returns mockPreference(setOf("1"))
 
-        val tracker = mockk<Tracker>()
+        val tracker = mockk<BaseTracker>()
         every { tracker.id } returns 1L
         every { tracker.isLoggedIn } returns true
         every { trackerManager.trackers } returns listOf(tracker)
@@ -154,16 +154,27 @@ class GetReadingPromptStateTest {
         every { libraryPreferences.forcedTrackingEnabled() } returns mockPreference(true)
         every { libraryPreferences.requiredTrackerIds() } returns mockPreference(setOf("1"))
 
-        val tracker = mockk<Tracker>()
+        val tracker = mockk<BaseTracker>()
         every { tracker.id } returns 1L
         every { tracker.isLoggedIn } returns true
         every { trackerManager.trackers } returns listOf(tracker)
 
         coEvery { getTracks.await(testMangaId) } returns listOf(
             Track(
-                id = 1, mangaId = testMangaId, trackerId = 1L, remoteId = 100, libraryId = null,
-                title = "", lastChapterRead = 0.0, totalChapters = 0, status = 0, score = 0.0,
-                remoteUrl = "", startDate = 0, finishDate = 0,
+                id = 1,
+                mangaId = testMangaId,
+                trackerId = 1L,
+                remoteId = 100,
+                libraryId = null,
+                title = "",
+                lastChapterRead = 0.0,
+                totalChapters = 0,
+                status = 0,
+                score = 0.0,
+                remoteUrl = "",
+                startDate = 0,
+                finishDate = 0,
+                private = false,
             ),
         )
 
@@ -179,7 +190,7 @@ class GetReadingPromptStateTest {
         every { libraryPreferences.forcedTrackingMode() } returns mockPreference(ForcedTrackingMode.EVERY_TIME)
         every { libraryPreferences.requiredTrackerIds() } returns mockPreference(setOf("1"))
 
-        val tracker = mockk<Tracker>()
+        val tracker = mockk<BaseTracker>()
         every { tracker.id } returns 1L
         every { tracker.isLoggedIn } returns true
         every { trackerManager.trackers } returns listOf(tracker)
