@@ -38,6 +38,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.toArgb
@@ -64,6 +65,7 @@ import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.connections.service.ConnectionsPreferences
+import eu.kanade.domain.manga.interactor.ReadingPromptState
 import eu.kanade.domain.manga.model.readingMode
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.reader.ChapterListDialog
@@ -73,6 +75,7 @@ import eu.kanade.presentation.reader.PageIndicatorText
 import eu.kanade.presentation.reader.ReaderContentOverlay
 import eu.kanade.presentation.reader.ReaderPageActionsDialog
 import eu.kanade.presentation.reader.ReadingModeSelectDialog
+import eu.kanade.presentation.reader.ReadingPromptDialog
 import eu.kanade.presentation.reader.appbars.NavBarType
 import eu.kanade.presentation.reader.appbars.ReaderAppBars
 import eu.kanade.presentation.reader.settings.ReaderSettingsDialog
@@ -748,6 +751,53 @@ class ReaderActivity : BaseActivity() {
                 // SY <--
                 null -> {}
             }
+
+            // S0M -->
+            val readingPromptState by viewModel.readingPromptState.collectAsState()
+            (readingPromptState as? ReadingPromptState.ShowPrompt)?.let { promptState ->
+                val mangaId = state.manga?.id ?: return@let
+                val mangaTitle = state.manga?.title ?: ""
+                val screenModel = remember(mangaId) {
+                    ReadingPromptScreenModel(
+                        mangaId = mangaId,
+                        mangaTitle = mangaTitle,
+                        trackers = promptState.missingTrackers,
+                        alreadyLinkedTrackerIds = promptState.alreadyLinkedTrackers.map { it.id }.toSet(),
+                    )
+                }
+                val screenModelState by screenModel.state.collectAsState()
+                val scope = rememberCoroutineScope()
+
+                ReadingPromptDialog(
+                    showLibraryPrompt = promptState.showLibraryPrompt,
+                    showTrackingPrompt = promptState.showTrackingPrompt,
+                    categories = screenModelState.categories,
+                    selectedCategoryIds = screenModelState.selectedCategoryIds,
+                    onToggleCategory = screenModel::toggleCategory,
+                    searchState = screenModel.searchState,
+                    onSearch = screenModel::search,
+                    trackers = screenModel.trackers,
+                    enabledTrackerIds = screenModelState.enabledTrackerIds,
+                    onToggleTracker = screenModel::toggleTracker,
+                    alreadyLinkedTrackerIds = screenModel.alreadyLinkedTrackerIds,
+                    searchResults = screenModelState.searchResults,
+                    selectedResults = screenModelState.selectedResults,
+                    onSelectResult = screenModel::selectResult,
+                    onRetry = screenModel::retrySearch,
+                    skipTrackingChecked = screenModelState.skipTrackingChecked,
+                    onSkipTrackingChange = screenModel::setSkipTracking,
+                    onNotNow = viewModel::onPromptNotNow,
+                    onConfirm = {
+                        scope.launch {
+                            if (screenModel.confirm(promptState.showLibraryPrompt)) {
+                                viewModel.onPromptDismiss()
+                            }
+                        }
+                    },
+                    onDismissRequest = viewModel::onPromptDismiss,
+                )
+            }
+            // S0M <--
         }
 
         // KMK -->
