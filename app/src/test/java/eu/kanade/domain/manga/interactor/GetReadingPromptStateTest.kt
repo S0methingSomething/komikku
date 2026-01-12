@@ -15,7 +15,6 @@ import tachiyomi.core.common.preference.Preference
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.library.service.LibraryPreferences
-import tachiyomi.domain.library.service.LibraryPreferences.ForcedTrackingMode
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.track.interactor.GetTracks
@@ -49,7 +48,6 @@ class GetReadingPromptStateTest {
         every { libraryPreferences.autoAddToLibraryEnabled() } returns mockPreference(true)
         every { libraryPreferences.autoAddToLibraryThreshold() } returns mockPreference(3)
         every { libraryPreferences.forcedTrackingEnabled() } returns mockPreference(false)
-        every { libraryPreferences.forcedTrackingMode() } returns mockPreference(ForcedTrackingMode.AFTER_THRESHOLD)
         every { libraryPreferences.forcedTrackingThreshold() } returns mockPreference(3)
         every { libraryPreferences.requiredTrackerIds() } returns mockPreference(emptySet())
         every { trackerManager.trackers } returns emptyList()
@@ -184,10 +182,10 @@ class GetReadingPromptStateTest {
     }
 
     @Test
-    fun `tracking prompt respects EVERY_TIME mode`() = runTest {
+    fun `tracking prompt triggers when threshold is 0`() = runTest {
         every { libraryPreferences.autoAddToLibraryEnabled() } returns mockPreference(false)
         every { libraryPreferences.forcedTrackingEnabled() } returns mockPreference(true)
-        every { libraryPreferences.forcedTrackingMode() } returns mockPreference(ForcedTrackingMode.EVERY_TIME)
+        every { libraryPreferences.forcedTrackingThreshold() } returns mockPreference(0)
         every { libraryPreferences.requiredTrackerIds() } returns mockPreference(setOf("1"))
 
         val tracker = mockk<BaseTracker>()
@@ -195,7 +193,7 @@ class GetReadingPromptStateTest {
         every { tracker.isLoggedIn } returns true
         every { trackerManager.trackers } returns listOf(tracker)
 
-        // Even with 0 read chapters, EVERY_TIME should trigger
+        // With 0 read chapters and threshold 0, should trigger
         coEvery { getChaptersByMangaId.await(testMangaId) } returns createChapters(5, read = 0)
 
         val result = getReadingPromptState.await(testMangaId, emptySet())
