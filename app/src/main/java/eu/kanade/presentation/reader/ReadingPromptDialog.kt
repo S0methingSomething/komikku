@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldState
@@ -26,6 +26,7 @@ import eu.kanade.presentation.track.TrackerSearchState
 import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import tachiyomi.domain.category.model.Category
+import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -71,7 +72,7 @@ fun ReadingPromptDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(400.dp),
+                    .heightIn(min = 200.dp, max = 450.dp),
             ) {
                 if (showLibraryPrompt) {
                     Text(
@@ -83,6 +84,15 @@ fun ReadingPromptDialog(
                             .weight(if (showTrackingPrompt) 0.3f else 1f)
                             .verticalScroll(rememberScrollState()),
                     ) {
+                        if (categories.isEmpty()) {
+                            // Show default option when no categories
+                            Text(
+                                text = stringResource(MR.strings.default_category),
+                                modifier = Modifier.padding(MaterialTheme.padding.medium),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                         categories.forEach { category ->
                             Row(
                                 modifier = Modifier

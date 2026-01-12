@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.data.track.TrackerManager
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.library.service.LibraryPreferences
-import tachiyomi.domain.library.service.LibraryPreferences.ForcedTrackingMode
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.track.interactor.GetTracks
 
@@ -64,10 +63,16 @@ class GetReadingPromptState(
             .toSet()
 
         val loggedInTrackers = trackerManager.trackers.filter { it.isLoggedIn }
-        val requiredTrackers = loggedInTrackers.filter { it.id in requiredTrackerIds }
 
-        val alreadyLinkedTrackers = requiredTrackers.filter { it.id in linkedTrackerIds }
-        val missingTrackers = requiredTrackers.filter { it.id !in linkedTrackerIds }
+        // If no required trackers selected, use all logged-in trackers
+        val trackersToCheck = if (requiredTrackerIds.isEmpty()) {
+            loggedInTrackers
+        } else {
+            loggedInTrackers.filter { it.id in requiredTrackerIds }
+        }
+
+        val alreadyLinkedTrackers = trackersToCheck.filter { it.id in linkedTrackerIds }
+        val missingTrackers = trackersToCheck.filter { it.id !in linkedTrackerIds }
 
         // 8. Determine which prompts apply
         var showLibraryPrompt = false
@@ -80,16 +85,10 @@ class GetReadingPromptState(
             }
         }
 
-        if (trackingEnabled && missingTrackers.isNotEmpty()) {
-            val mode = libraryPreferences.forcedTrackingMode().get()
-            when (mode) {
-                ForcedTrackingMode.EVERY_TIME -> showTrackingPrompt = true
-                ForcedTrackingMode.AFTER_THRESHOLD -> {
-                    val threshold = libraryPreferences.forcedTrackingThreshold().get()
-                    if (readCount >= threshold) {
-                        showTrackingPrompt = true
-                    }
-                }
+        if (trackingEnabled && loggedInTrackers.isNotEmpty() && missingTrackers.isNotEmpty()) {
+            val threshold = libraryPreferences.forcedTrackingThreshold().get()
+            if (readCount >= threshold) {
+                showTrackingPrompt = true
             }
         }
 

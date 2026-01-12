@@ -62,7 +62,6 @@ import kotlinx.collections.immutable.toPersistentMap
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.domain.library.service.LibraryPreferences
-import tachiyomi.domain.library.service.LibraryPreferences.ForcedTrackingMode
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -224,7 +223,6 @@ object SettingsTrackingScreen : SearchableSettings {
         val autoAddEnabled by libraryPreferences.autoAddToLibraryEnabled().collectAsState()
         val autoAddThreshold by libraryPreferences.autoAddToLibraryThreshold().collectAsState()
         val trackingEnabled by libraryPreferences.forcedTrackingEnabled().collectAsState()
-        val trackingMode by libraryPreferences.forcedTrackingMode().collectAsState()
         val trackingThreshold by libraryPreferences.forcedTrackingThreshold().collectAsState()
 
         val loggedInTrackers = remember(trackerManager) {
@@ -244,7 +242,7 @@ object SettingsTrackingScreen : SearchableSettings {
                 ),
                 Preference.PreferenceItem.SliderPreference(
                     value = autoAddThreshold,
-                    valueRange = 1..10,
+                    valueRange = 0..10,
                     title = stringResource(KMR.strings.pref_chapters_before_prompt),
                     enabled = autoAddEnabled,
                     onValueChanged = { libraryPreferences.autoAddToLibraryThreshold().set(it) },
@@ -254,26 +252,11 @@ object SettingsTrackingScreen : SearchableSettings {
                     title = stringResource(KMR.strings.pref_forced_tracking),
                     subtitle = stringResource(KMR.strings.pref_forced_tracking_summary),
                 ),
-                Preference.PreferenceItem.ListPreference(
-                    preference = libraryPreferences.forcedTrackingMode(),
-                    entries = ForcedTrackingMode.entries
-                        .associateWith {
-                            stringResource(
-                                when (it) {
-                                    ForcedTrackingMode.EVERY_TIME -> KMR.strings.pref_tracking_mode_every_time
-                                    ForcedTrackingMode.AFTER_THRESHOLD -> KMR.strings.pref_tracking_mode_after_threshold
-                                },
-                            )
-                        }
-                        .toPersistentMap(),
-                    title = stringResource(KMR.strings.pref_tracking_prompt_mode),
-                    enabled = trackingEnabled,
-                ),
                 Preference.PreferenceItem.SliderPreference(
                     value = trackingThreshold,
-                    valueRange = 1..10,
+                    valueRange = 0..10,
                     title = stringResource(KMR.strings.pref_chapters_before_prompt),
-                    enabled = trackingEnabled && trackingMode == ForcedTrackingMode.AFTER_THRESHOLD,
+                    enabled = trackingEnabled,
                     onValueChanged = { libraryPreferences.forcedTrackingThreshold().set(it) },
                 ),
                 Preference.PreferenceItem.MultiSelectListPreference(
