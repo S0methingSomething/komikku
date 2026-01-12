@@ -170,6 +170,9 @@ class MangaRestorer(
                 version = manga.version,
                 isSyncing = 1,
                 notes = manga.notes,
+                // S0M -->
+                skipTracking = manga.skipTracking,
+                // S0M <--
             )
         }
         return manga
