@@ -234,8 +234,9 @@ fun TrackerSearch(
     }
 }
 
+// S0M --> made internal for reuse in MultiTrackerSearch
 @Composable
-private fun SearchResultItem(
+internal fun SearchResultItem(
     trackSearch: TrackSearch,
     selected: Boolean,
     onClick: () -> Unit,
