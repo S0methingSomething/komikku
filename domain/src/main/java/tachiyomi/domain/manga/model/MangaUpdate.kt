@@ -28,6 +28,9 @@ data class MangaUpdate(
     // SY -->
     val filteredScanlators: List<String>? = null,
     // SY <--
+    // S0M -->
+    val skipTracking: Boolean? = null,
+    // S0M <--
 )
 
 fun Manga.toMangaUpdate(): MangaUpdate {

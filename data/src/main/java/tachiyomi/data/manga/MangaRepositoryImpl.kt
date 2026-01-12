@@ -186,6 +186,9 @@ class MangaRepositoryImpl(
                     version = value.version,
                     isSyncing = 0,
                     notes = value.notes,
+                    // S0M -->
+                    skipTracking = value.skipTracking,
+                    // S0M <--
                 )
             }
         }

@@ -1,0 +1,1 @@
+ALTER TABLE mangas ADD COLUMN skip_tracking INTEGER AS Boolean NOT NULL DEFAULT 0;

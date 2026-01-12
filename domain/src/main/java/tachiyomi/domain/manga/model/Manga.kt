@@ -36,6 +36,9 @@ data class Manga(
     val favoriteModifiedAt: Long?,
     val version: Long,
     val notes: String,
+    // S0M -->
+    val skipTracking: Boolean,
+    // S0M <--
 ) : Serializable {
 
     // SY -->
@@ -167,6 +170,9 @@ data class Manga(
             favoriteModifiedAt = null,
             version = 0L,
             notes = "",
+            // S0M -->
+            skipTracking = false,
+            // S0M <--
         )
 
         // SY -->
