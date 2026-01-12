@@ -238,5 +238,11 @@
     <string name="pref_tracking_prompt_mode">Tracking prompt mode</string>
     <string name="pref_tracking_mode_every_time">Every time</string>
     <string name="pref_tracking_mode_after_threshold">After threshold</string>
+    <string name="reading_prompt_add_to_library">Add to library?</string>
+    <string name="reading_prompt_set_up_tracking">Set up tracking?</string>
+    <string name="reading_prompt_add_and_track">Add to library and track?</string>
+    <string name="reading_prompt_select_categories">Select categories</string>
+    <string name="reading_prompt_not_now">Not now</string>
+    <string name="reading_prompt_confirm">Confirm</string>
     <string name="reading_prompt_dont_track_series">Don\'t track this series</string>
 </resources>
