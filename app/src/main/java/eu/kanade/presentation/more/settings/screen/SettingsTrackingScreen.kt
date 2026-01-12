@@ -23,6 +23,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,9 +58,12 @@ import eu.kanade.tachiyomi.util.system.openInBrowser
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toPersistentMap
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withUIContext
+import tachiyomi.domain.library.service.LibraryPreferences
+import tachiyomi.domain.library.service.LibraryPreferences.ForcedTrackingMode
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -206,8 +210,82 @@ object SettingsTrackingScreen : SearchableSettings {
                         } + listOf(Preference.PreferenceItem.InfoPreference(enhancedTrackerInfo))
                     ).toImmutableList(),
             ),
+            // S0M -->
+            getReadingPromptsGroup(trackerManager = trackerManager),
+            // S0M <--
         )
     }
+
+    // S0M -->
+    @Composable
+    private fun getReadingPromptsGroup(trackerManager: TrackerManager): Preference.PreferenceGroup {
+        val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
+
+        val autoAddEnabled by libraryPreferences.autoAddToLibraryEnabled().collectAsState()
+        val autoAddThreshold by libraryPreferences.autoAddToLibraryThreshold().collectAsState()
+        val trackingEnabled by libraryPreferences.forcedTrackingEnabled().collectAsState()
+        val trackingMode by libraryPreferences.forcedTrackingMode().collectAsState()
+        val trackingThreshold by libraryPreferences.forcedTrackingThreshold().collectAsState()
+
+        val loggedInTrackers = remember(trackerManager) {
+            trackerManager.trackers.filter { it.isLoggedIn && it !is EnhancedTracker }
+        }
+        val trackerEntries = remember(loggedInTrackers) {
+            loggedInTrackers.associate { it.id.toString() to it.name }.toImmutableMap()
+        }
+
+        return Preference.PreferenceGroup(
+            title = stringResource(KMR.strings.pref_reading_prompts),
+            preferenceItems = persistentListOf(
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = libraryPreferences.autoAddToLibraryEnabled(),
+                    title = stringResource(KMR.strings.pref_auto_add_to_library),
+                    subtitle = stringResource(KMR.strings.pref_auto_add_to_library_summary),
+                ),
+                Preference.PreferenceItem.SliderPreference(
+                    value = autoAddThreshold,
+                    valueRange = 1..10,
+                    title = stringResource(KMR.strings.pref_chapters_before_prompt),
+                    enabled = autoAddEnabled,
+                    onValueChanged = { libraryPreferences.autoAddToLibraryThreshold().set(it) },
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = libraryPreferences.forcedTrackingEnabled(),
+                    title = stringResource(KMR.strings.pref_forced_tracking),
+                    subtitle = stringResource(KMR.strings.pref_forced_tracking_summary),
+                ),
+                Preference.PreferenceItem.ListPreference(
+                    preference = libraryPreferences.forcedTrackingMode(),
+                    entries = ForcedTrackingMode.entries
+                        .associateWith {
+                            stringResource(
+                                when (it) {
+                                    ForcedTrackingMode.EVERY_TIME -> KMR.strings.pref_tracking_mode_every_time
+                                    ForcedTrackingMode.AFTER_THRESHOLD -> KMR.strings.pref_tracking_mode_after_threshold
+                                },
+                            )
+                        }
+                        .toPersistentMap(),
+                    title = stringResource(KMR.strings.pref_tracking_prompt_mode),
+                    enabled = trackingEnabled,
+                ),
+                Preference.PreferenceItem.SliderPreference(
+                    value = trackingThreshold,
+                    valueRange = 1..10,
+                    title = stringResource(KMR.strings.pref_chapters_before_prompt),
+                    enabled = trackingEnabled && trackingMode == ForcedTrackingMode.AFTER_THRESHOLD,
+                    onValueChanged = { libraryPreferences.forcedTrackingThreshold().set(it) },
+                ),
+                Preference.PreferenceItem.MultiSelectListPreference(
+                    preference = libraryPreferences.requiredTrackerIds(),
+                    entries = trackerEntries,
+                    title = stringResource(KMR.strings.pref_required_trackers),
+                    enabled = trackingEnabled && trackerEntries.isNotEmpty(),
+                ),
+            ),
+        )
+    }
+    // S0M <--
 
     @Composable
     private fun TrackingLoginDialog(

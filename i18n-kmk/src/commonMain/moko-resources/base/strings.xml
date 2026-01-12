@@ -226,4 +226,16 @@
     <string name="pref_discord_show_download_button_summary">Displays a button to download the app</string>
     <string name="pref_discord_show_discord_button">Show Discord Button</string>
     <string name="pref_discord_show_discord_button_summary">Displays a button to join the Discord server</string>
+
+    <!-- S0M: Reading Prompts -->
+    <string name="pref_reading_prompts">Reading Prompts</string>
+    <string name="pref_auto_add_to_library">Auto-add to library</string>
+    <string name="pref_auto_add_to_library_summary">Prompt to add manga to library after reading chapters</string>
+    <string name="pref_forced_tracking">Prompt for tracking</string>
+    <string name="pref_forced_tracking_summary">Prompt to set up tracking on required trackers</string>
+    <string name="pref_required_trackers">Required trackers</string>
+    <string name="pref_chapters_before_prompt">Chapters before prompt</string>
+    <string name="pref_tracking_prompt_mode">Tracking prompt mode</string>
+    <string name="pref_tracking_mode_every_time">Every time</string>
+    <string name="pref_tracking_mode_after_threshold">After threshold</string>
 </resources>
