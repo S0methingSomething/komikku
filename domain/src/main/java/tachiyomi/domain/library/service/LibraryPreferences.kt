@@ -246,12 +246,37 @@ class LibraryPreferences(
 
     // endregion
 
+    // S0M -->
+    // region Reading Prompts
+
+    fun autoAddToLibraryEnabled() = preferenceStore.getBoolean("auto_add_to_library_enabled", false)
+
+    fun autoAddToLibraryThreshold() = preferenceStore.getInt("auto_add_to_library_threshold", 3)
+
+    fun forcedTrackingEnabled() = preferenceStore.getBoolean("forced_tracking_enabled", false)
+
+    fun forcedTrackingMode() = preferenceStore.getEnum("forced_tracking_mode", ForcedTrackingMode.AFTER_THRESHOLD)
+
+    fun forcedTrackingThreshold() = preferenceStore.getInt("forced_tracking_threshold", 3)
+
+    fun requiredTrackerIds() = preferenceStore.getStringSet("required_tracker_ids", emptySet())
+
+    // endregion
+    // S0M <--
+
     enum class ChapterSwipeAction {
         ToggleRead,
         ToggleBookmark,
         Download,
         Disabled,
     }
+
+    // S0M -->
+    enum class ForcedTrackingMode {
+        EVERY_TIME,
+        AFTER_THRESHOLD,
+    }
+    // S0M <--
 
     // SY -->
 
