@@ -218,6 +218,7 @@ object SettingsTrackingScreen : SearchableSettings {
     // S0M -->
     @Composable
     private fun getReadingPromptsGroup(trackerManager: TrackerManager): Preference.PreferenceGroup {
+        val context = LocalContext.current
         val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
 
         val autoAddEnabled by libraryPreferences.autoAddToLibraryEnabled().collectAsState()
@@ -250,7 +251,7 @@ object SettingsTrackingScreen : SearchableSettings {
                     enabled = autoAddEnabled,
                     onValueChanged = { libraryPreferences.autoAddToLibraryThreshold().set(it) },
                 ),
-                // Tracking prompt settings - always visible, subtitle explains if no trackers
+                // Tracking prompt settings
                 Preference.PreferenceItem.SwitchPreference(
                     preference = libraryPreferences.forcedTrackingEnabled(),
                     title = stringResource(KMR.strings.pref_forced_tracking),
@@ -259,13 +260,21 @@ object SettingsTrackingScreen : SearchableSettings {
                     } else {
                         stringResource(KMR.strings.pref_forced_tracking_no_trackers)
                     },
+                    onValueChanged = { newValue ->
+                        if (newValue && !hasLoggedInTrackers) {
+                            context.toast(KMR.strings.pref_forced_tracking_no_trackers)
+                            false
+                        } else {
+                            true
+                        }
+                    },
                 ),
                 Preference.PreferenceItem.SliderPreference(
                     value = trackingThreshold,
                     valueRange = 0..10,
                     title = stringResource(KMR.strings.pref_tracking_chapters_threshold),
                     subtitle = stringResource(KMR.strings.pref_tracking_chapters_threshold_summary),
-                    enabled = trackingEnabled,
+                    enabled = trackingEnabled && hasLoggedInTrackers,
                     onValueChanged = { libraryPreferences.forcedTrackingThreshold().set(it) },
                 ),
                 Preference.PreferenceItem.MultiSelectListPreference(
@@ -277,7 +286,7 @@ object SettingsTrackingScreen : SearchableSettings {
                     } else {
                         stringResource(KMR.strings.pref_forced_tracking_no_trackers)
                     },
-                    enabled = trackingEnabled,
+                    enabled = trackingEnabled && hasLoggedInTrackers,
                 ),
             ),
         )
