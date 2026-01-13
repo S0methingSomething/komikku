@@ -59,6 +59,16 @@ class WebtoonRecyclerView @JvmOverloads constructor(
     private var isManuallyScrolling = false
     private var tapDuringManualScroll = false
 
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        // KMK: Force rebind visible items when size changes (e.g., window resize)
+        if (oldh > 0 && h != oldh) {
+            post {
+                adapter?.notifyDataSetChanged()
+            }
+        }
+    }
+
     override fun onMeasure(widthSpec: Int, heightSpec: Int) {
         halfWidth = MeasureSpec.getSize(widthSpec) / 2
         halfHeight = MeasureSpec.getSize(heightSpec) / 2
