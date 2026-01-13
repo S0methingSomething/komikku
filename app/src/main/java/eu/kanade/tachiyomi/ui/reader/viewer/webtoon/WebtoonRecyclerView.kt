@@ -62,8 +62,10 @@ class WebtoonRecyclerView @JvmOverloads constructor(
     override fun onMeasure(widthSpec: Int, heightSpec: Int) {
         halfWidth = MeasureSpec.getSize(widthSpec) / 2
         halfHeight = MeasureSpec.getSize(heightSpec) / 2
-        if (!heightSet) {
-            originalHeight = MeasureSpec.getSize(heightSpec)
+        val newHeight = MeasureSpec.getSize(heightSpec)
+        // KMK: Update originalHeight when height changes (e.g., window resize)
+        if (!heightSet || originalHeight != newHeight) {
+            originalHeight = newHeight
             heightSet = true
         }
         super.onMeasure(widthSpec, heightSpec)
