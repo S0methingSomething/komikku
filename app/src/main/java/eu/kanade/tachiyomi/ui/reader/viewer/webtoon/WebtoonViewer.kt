@@ -184,7 +184,7 @@ class WebtoonViewer(
             recycler.post {
                 recycler.doOnLayout doOnLayout@{
                     val currentWidth = recycler.width
-                    val currentHeight = recycler.originalHeight
+                    val currentHeight = recycler.height
                     if (currentWidth <= 0 || currentHeight <= 0) return@doOnLayout
 
                     if (scaleType == ReaderPreferences.WebtoonScaleType.FIT) {
